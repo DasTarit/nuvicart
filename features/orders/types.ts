@@ -35,4 +35,21 @@ export type Order = {
 
 export type FulfillmentSummary = { status: "pending" | "processing" | "ready_to_ship" | "shipped" | "delivered" | "cancelled"; carrier: string | null; trackingNumber: string | null; shippedAt: string | null; deliveredAt: string | null; };
 
-export type OrderSummary = Pick<Order, "id" | "orderNumber" | "status" | "paymentStatus" | "currency" | "subtotal" | "discountTotal" | "shippingTotal" | "taxTotal" | "grandTotal"> & { itemCount: number; fulfillment: FulfillmentSummary | null };
+export type OrderSummary =
+  Pick<
+    Order,
+    "id" |
+    "orderNumber" |
+    "status" |
+    "paymentStatus" |
+    "currency" |
+    "subtotal" |
+    "discountTotal" |
+    "shippingTotal" |
+    "taxTotal" |
+    "grandTotal" |
+    "createdAt"
+  > & {
+    itemCount: number;
+    fulfillment: FulfillmentSummary | null;
+  };

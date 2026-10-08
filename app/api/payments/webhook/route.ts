@@ -98,10 +98,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true });
   } catch {
     if (claim?.status === "claimed" && claim.processing_token) {
-      await admin.rpc("release_razorpay_webhook_event", {
-        p_event_id: claim.event_id,
-        p_processing_token: claim.processing_token,
-      }).catch(() => undefined);
+      try {
+        await admin.rpc("release_razorpay_webhook_event", {
+          p_event_id: claim.event_id,
+          p_processing_token: claim.processing_token,
+        });
+      } catch {
+        // Best-effort release; preserve the original webhook failure response.
+      }
     }
     return NextResponse.json({ error: "Webhook processing failed; Razorpay may retry the event." }, { status: 503 });
   }

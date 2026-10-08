@@ -14,6 +14,7 @@ function mapSummary(row: Record<string, unknown>): OrderSummary {
     shippingTotal: Number(row.shipping_total),
     taxTotal: Number(row.tax_total),
     grandTotal: Number(row.grand_total),
+    createdAt: String(row.created_at),
     itemCount: Number(row.item_count ?? 0),
     fulfillment: (() => { const f = Array.isArray(row.fulfillments) ? row.fulfillments[0] as Record<string, unknown> | undefined : undefined; return f ? { status: f.status as FulfillmentSummary["status"], carrier: f.carrier == null ? null : String(f.carrier), trackingNumber: f.tracking_number == null ? null : String(f.tracking_number), shippedAt: f.shipped_at == null ? null : String(f.shipped_at), deliveredAt: f.delivered_at == null ? null : String(f.delivered_at) } : null; })(),
   };

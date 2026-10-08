@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       const fulfillment=await transitionFulfillment(body.fulfillmentId, body.status as FulfillmentStatus); await recordAdminAudit("fulfillment_transitioned","fulfillment",fulfillment.id,{status:body.status},`fulfillment:transition:${fulfillment.id}:${body.status}:${Date.now()}`); return NextResponse.json({ fulfillment });
     }
     if (body.action === "ship" && typeof body.fulfillmentId === "string" && typeof body.carrier === "string" && typeof body.trackingNumber === "string" && typeof body.shippingMethod === "string") {
-      const fulfillment=await assignManualShipment(body.fulfillmentId, body.carrier, body.trackingNumber, body.shippingMethod); await recordAdminAudit("manual_shipment_assigned","fulfillment",fulfillment.id,{carrier:body.carrier,shippingMethod:body.shippingMethod},`fulfillment:ship:${fulfillment.id}:${fulfillment.shipped_at??Date.now()}`); return NextResponse.json({ fulfillment });
+      const fulfillment=await assignManualShipment(body.fulfillmentId, body.carrier, body.trackingNumber, body.shippingMethod); await recordAdminAudit("manual_shipment_assigned","fulfillment",fulfillment.id,{carrier:body.carrier,shippingMethod:body.shippingMethod},`fulfillment:ship:${fulfillment.id}:${fulfillment.shippedAt ?? Date.now()}`); return NextResponse.json({ fulfillment });
     }
     return NextResponse.json({ error: "INVALID_FULFILLMENT_OPERATION" }, { status: 400 });
   } catch (error) {
