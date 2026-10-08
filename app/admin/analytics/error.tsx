@@ -1,0 +1,2 @@
+"use client";
+export default function Error({ reset }: { reset: () => void }) { return <main className="p-6 lg:p-8"><div className="rounded-lg border border-border bg-surface p-6"><h1 className="text-xl font-semibold">Analytics unavailable</h1><p className="mt-2 text-sm text-muted">The reporting query could not be completed. Commerce state has not been changed.</p><button onClick={reset} className="mt-4 rounded-lg border px-4 py-2 text-sm">Try again</button></div></main>; }

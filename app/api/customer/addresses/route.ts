@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { createAddress, listAddresses } from "@/features/customer/service";
+export async function GET(){return NextResponse.json({addresses:await listAddresses()});}
+export async function POST(request:Request){const b=await request.json().catch(()=>null);if(!b||typeof b!=="object")return NextResponse.json({error:"INVALID_INPUT"},{status:400});const required=["label","fullName","phone","addressLine1","city","state","postalCode","country"];if(required.some(k=>typeof b[k]!=="string"||!String(b[k]).trim()))return NextResponse.json({error:"INVALID_ADDRESS"},{status:400});return NextResponse.json({address:await createAddress({label:b.label,fullName:b.fullName,phone:b.phone,addressLine1:b.addressLine1,addressLine2:b.addressLine2??null,landmark:b.landmark??null,city:b.city,state:b.state,postalCode:b.postalCode,country:b.country,isDefault:Boolean(b.isDefault)})},{status:201});}

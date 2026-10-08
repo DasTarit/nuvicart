@@ -1,0 +1,8 @@
+import Link from "next/link";
+import { listOrders } from "@/features/orders/service";
+
+export default async function Orders() {
+  const orders = await listOrders();
+  const paymentLabel = (status: string) => status === "paid_inventory_issue" ? "Paid — fulfillment review" : status.replaceAll("_", " ");
+  return <section><h2 className="text-2xl font-semibold">Orders</h2><p className="mt-1 text-sm text-muted">Your completed order history and payment status.</p>{orders.length ? <div className="mt-7 divide-y rounded-2xl border">{orders.map((order) => <Link key={order.id} href={`/account/orders/${encodeURIComponent(order.orderNumber)}`} className="flex flex-col gap-3 p-5 hover:bg-surface-muted sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold">{order.orderNumber}</p><p className="mt-1 text-xs text-muted">{new Date(order.createdAt).toLocaleString("en-IN")} · {order.itemCount} item{order.itemCount === 1 ? "" : "s"}</p></div><div className="flex items-center gap-5 text-sm"><span className="capitalize text-muted">{order.status.replaceAll("_", " ")}</span><span className="capitalize text-muted">Payment: {paymentLabel(order.paymentStatus)}</span>{order.fulfillment && <span className="capitalize text-muted">Fulfillment: {order.fulfillment.status.replaceAll("_", " ")}</span>}<span className="font-semibold">₹{order.grandTotal.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span></div></Link>)}</div> : <div className="mt-8 rounded-2xl border p-12 text-center"><p className="font-medium">No orders yet.</p><p className="mt-2 text-sm text-muted">Orders you create will appear here.</p></div>}</section>;
+}

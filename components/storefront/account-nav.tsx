@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function AccountNav(){return <nav className="flex gap-2 overflow-auto border-b pb-3 text-sm">{[["Overview","/account"],["Profile","/account/profile"],["Addresses","/account/addresses"],["Wishlist","/account/wishlist"],["Orders","/account/orders"]].map(([label,href])=><Link key={href} href={href} className="whitespace-nowrap rounded-full border px-4 py-2 hover:bg-surface-muted">{label}</Link>)}</nav>}

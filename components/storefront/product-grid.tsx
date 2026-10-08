@@ -1,0 +1,7 @@
+"use client";
+import Image from "next/image"; import { useState } from "react";
+import type { Product } from "@/features/catalog";
+import { ProductCard } from "./product-card";
+import { Dialog } from "@/components/ui/dialog";
+import { useCart } from "@/features/cart/store";
+export function ProductGrid({products}:{products:Product[]}){const [quick,setQuick]=useState<Product|null>(null);const {add}=useCart();return <><div className="grid grid-cols-2 gap-x-4 gap-y-9 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">{products.map(p=><ProductCard key={p.id} product={p} onQuickView={setQuick}/>)}</div>{quick&&<Dialog open onClose={()=>setQuick(null)}><div className="grid gap-6 sm:grid-cols-2"><Image src={quick.image} alt={quick.name} width={900} height={900} className="aspect-square w-full rounded-2xl object-cover"/><div><p className="text-sm text-muted">{quick.brand}</p><h2 className="mt-2 text-2xl font-semibold">{quick.name}</h2><p className="mt-3 text-xl font-semibold">₹{quick.price.toLocaleString("en-IN")}</p><p className="mt-4 text-sm leading-6 text-muted">{quick.description}</p><button type="button" disabled={quick.stock <= 0} onClick={() => { if (quick.stock > 0) { add(quick); setQuick(null); } }} className="mt-6 h-11 w-full rounded-full bg-primary px-5 font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50">{quick.stock > 0 ? "Add to Cart" : "Out of stock"}</button></div></div></Dialog>}</>}

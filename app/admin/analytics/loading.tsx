@@ -1,0 +1,2 @@
+import { Card } from "@/components/ui/card";
+export default function Loading() { return <main className="p-4 sm:p-6 lg:p-8"><div className="animate-pulse"><div className="h-8 w-48 rounded bg-surface-muted"/><div className="mt-2 h-4 w-80 rounded bg-surface-muted"/><div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({length:8},(_,i)=><Card key={i} className="h-28 bg-surface-muted"/>)}</div></div></main>; }

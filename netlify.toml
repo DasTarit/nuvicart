@@ -1,0 +1,3 @@
+# Production environment variables are configured in Netlify site settings. Never commit secrets here.
+[build]
+  command = "npm run build"

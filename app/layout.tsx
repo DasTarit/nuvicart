@@ -1,0 +1,3 @@
+import type { Metadata } from "next"; import "./globals.css"; import { Providers } from "@/components/providers";
+export const metadata: Metadata={metadataBase:new URL(process.env.NEXT_PUBLIC_SITE_URL??"https://nuvicart.com"),title:{default:"Nuvicart — Everything You Love. One Cart.",template:"%s | Nuvicart"},description:"A modern multi-category ecommerce destination.",applicationName:"Nuvicart",alternates:{canonical:"/"},openGraph:{title:"Nuvicart — Everything You Love. One Cart.",description:"A modern multi-category ecommerce destination.",url:"/",siteName:"Nuvicart",type:"website"},robots:{index:true,follow:true}};
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="en"><body><Providers>{children}</Providers></body></html>}

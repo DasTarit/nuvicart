@@ -1,0 +1,1 @@
+export type Profile = { id: string; user_id: string; display_name: string | null; avatar_url: string | null; phone: string | null; role: "customer" | "admin" | "super_admin"; created_at: string; updated_at: string };

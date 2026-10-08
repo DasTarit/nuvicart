@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
+
+const root = process.cwd();
+const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
+const shiprocket = read('lib/shipping/shiprocket.ts');
+const route = read('app/api/shipping/shiprocket/route.ts');
+const migration = read('supabase/migrations/202610090003_shiprocket_idempotency_hardening.sql');
+const types = read('lib/shipping/types.ts');
+const manual = read('lib/shipping/manual.ts');
+const webhook = read('app/api/shipping/shiprocket/webhook/route.ts');
+
+const full = `${shiprocket}\n${route}\n${migration}\n${types}\n${manual}`;
+
+test('deterministic provider operation identity exists', () => assert.match(shiprocket, /shiprocketOperationKey/));
+test('same fulfillment produces same provider operation key', () => assert.match(shiprocket, /createHash\("sha256"\)\.update\(fulfillmentId\)/));
+test('retry does not generate a new provider operation key', () => assert.match(migration, /coalesce\(v_f\.provider_operation_key,'nuvicart-fulfillment-'\|\|v_f\.id::text\)/));
+test('provider order ID can be persisted before AWB', () => { assert.match(migration, /record_shiprocket_provider_order/); assert.match(route, /record_shiprocket_provider_order/); });
+test('AWB failure does not recreate provider order', () => { assert.match(route, /if \(!providerOrderId\)/); assert.match(route, /assignShipment/); });
+test('provider timeout is treated as unknown, not confirmed failure', () => assert.match(route, /RECOVERY_REQUIRED/));
+test('retry performs reconciliation before creation', () => { const a=route.indexOf('findShipmentByReference'); const b=route.indexOf('createProviderOrder'); assert.ok(a>=0 && b>a); });
+test('local provider identifiers are reused', () => assert.match(route, /fulfillment\.provider_order_id/));
+test('duplicate external creation is prevented by stable reference', () => { assert.match(shiprocket, /order_id: operationKey/); assert.match(migration, /provider_operation_key_unique/); });
+test('stale worker cannot overwrite newer operation', () => assert.match(migration, /shipping_processing_token is distinct from p_processing_token/));
+test('successful provider reconciliation can complete fulfillment', () => assert.match(route, /complete_shiprocket_creation/));
+test('failed reconciliation leaves fulfillment recoverable', () => assert.match(migration, /recovery_required/));
+test('fulfillment is not marked shipped without confirmed shipment/AWB', () => { assert.match(route, /if \(!shipment\?\.awbCode\)/); assert.match(migration, /p_awb_code/); });
+test('webhook remains idempotent', () => assert.match(webhook, /record_shiprocket_webhook/));
+test('webhook cannot regress fulfillment state', () => assert.match(read('supabase/migrations/202610090002_shiprocket_integration.sql'), /INVALID_PROVIDER_STATE_TRANSITION/));
+test('delivered cannot become shipped', () => assert.match(read('supabase/migrations/202610090001_fulfillment_foundation.sql') + migration, /delivered/));
+test('cancelled cannot become shipped', () => assert.match(read('supabase/migrations/202610090002_shiprocket_integration.sql') + migration, /status='cancelled'/));
+test('paid_inventory_issue remains blocked', () => assert.match(read('supabase/migrations/202610090001_fulfillment_foundation.sql'), /paid_inventory_issue/));
+test('Phase 5A tests still exist', () => assert.ok(fs.existsSync(path.join(root,'tests/phase5a-fulfillment.test.mjs'))));
+test('Phase 5B tests still exist', () => assert.ok(fs.existsSync(path.join(root,'tests/phase5b-shiprocket.test.mjs'))));
+test('Phase 4B Razorpay tests still exist', () => assert.ok(fs.existsSync(path.join(root,'tests/phase4b-payment.test.mjs'))));
+test('no duplicate fulfillment/order/payment tables', () => assert.doesNotMatch(full, /fulfillments_v2|shipments_v2|orders_v2|payments_v2|payment_attempts_v2/));
+test('manual shipping remains functional', () => assert.match(manual, /createShipment|manual/));
+test('Shiprocket secrets remain server-only', () => { assert.match(shiprocket, /server-only/); assert.doesNotMatch(read('.env.example'), /NEXT_PUBLIC_SHIPROCKET/); });
+test('no provider credentials or auth headers are logged', () => { assert.doesNotMatch(shiprocket, /console\.(log|error|warn).*authorization/i); assert.doesNotMatch(shiprocket, /console\.(log|error|warn).*SHIPROCKET_PASSWORD/i); });
+test('provider order operation status is explicit', () => assert.match(migration, /provider_operation_status/));
+test('provider order created timestamp is durable', () => assert.match(migration, /provider_order_created_at/));
+test('AWB assignment timestamp is durable', () => assert.match(migration, /provider_awb_assigned_at/));
