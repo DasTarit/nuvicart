@@ -109,7 +109,6 @@ export function CustomerSyncProvider({ children }: { children: ReactNode }) {
         sessionStorage.removeItem(AUTH_KEY);
         sessionStorage.removeItem(SYNC_MARKER);
       }
-      if (event === "SIGNED_IN") window.location.reload();
     });
     return () => { data.subscription.unsubscribe(); };
     // The listener owns logout/user-switch cleanup; the initial sync above owns first hydration.

@@ -1,4 +1,51 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { SiteShell } from "@/components/storefront/site-shell";
+import { AccountNav } from "@/components/storefront/account-nav";
+import { signOut } from "@/app/(auth)/actions";
+
 export const metadata: Metadata = { robots: { index: false, follow: false } };
-import { redirect } from "next/navigation"; import { createClient } from "@/lib/supabase/server"; import { SiteShell } from "@/components/storefront/site-shell"; import { AccountNav } from "@/components/storefront/account-nav"; import { signOut } from "@/app/(auth)/actions";
-export default async function AccountLayout({children}:{children:React.ReactNode}){const supabase=await createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)redirect("/login");return <SiteShell><main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">Your Nuvicart</p><h1 className="mt-2 text-4xl font-semibold tracking-tight">Account</h1></div><form action={signOut}><button type="submit" className="rounded-md text-sm text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Sign out</button></form></div><div className="mt-8"><AccountNav/></div><div className="mt-8">{children}</div></main></SiteShell>}
+
+export default async function AccountLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  const name =
+    profile?.display_name ||
+    user.user_metadata?.display_name ||
+    user.email?.split("@")[0] ||
+    "there";
+
+  return (
+    <SiteShell>
+      <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary">
+              Your Nuvicart account
+            </p>
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight">Hi, {name}</h1>
+          </div>
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="rounded-md text-sm text-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+        <div className="mt-8"><AccountNav /></div>
+        <div className="mt-8">{children}</div>
+      </main>
+    </SiteShell>
+  );
+}
