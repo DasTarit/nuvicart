@@ -13,7 +13,7 @@ const scriptSrc = ["'self'", "'unsafe-inline'", isDev ? "'unsafe-eval'" : "", "h
 
 const connectSrc = ["'self'", "https://api.razorpay.com", supabaseOrigin].filter(Boolean).join(" ");
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: `default-src 'self'; script-src ${scriptSrc}; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com; connect-src ${connectSrc}; img-src 'self' data: blob: https://images.unsplash.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'self'` },
+  { key: "Content-Security-Policy", value: `default-src 'self'; script-src ${scriptSrc}; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com; connect-src ${connectSrc}; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'self'` },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -24,7 +24,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  images: { remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" }] },
+  images: { remotePatterns: [{ protocol: "https", hostname: "**" }] },
   async headers() { return [{ source: "/(.*)", headers: securityHeaders }]; },
 };
 
