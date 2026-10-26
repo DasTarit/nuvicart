@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(new URL("..", import.meta.url).pathname);
+const ROOT = path.dirname(fileURLToPath(import.meta.url)) + "/..";
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const files = () => fs.readdirSync(path.join(ROOT, "supabase/migrations")).filter(f => f.endsWith(".sql")).sort();
 const allSource = () => {

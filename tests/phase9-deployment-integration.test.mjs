@@ -46,11 +46,16 @@ test("Netlify keeps the required production build command and no secrets",()=>{
   assert.doesNotMatch(s,/^[^#]*(?:SECRET|PASSWORD|API_KEY|SERVICE_ROLE)\s*=/im);
 });
 
-test("migration set is ordered and contains the production hardening migration",()=>{
-  const files=fs.readdirSync(path.join(root,"supabase/migrations")).filter(x=>x.endsWith(".sql")).sort();
-  assert.equal(files.at(-1),"202610090008_production_hardening.sql");
-  assert.equal(files.length,19);
-  assert.equal(new Set(files).size,files.length);
+test("migration set is ordered and contains the production hardening migration", () => {
+  const files = fs
+    .readdirSync(path.join(root, "supabase/migrations"))
+    .filter((file) => file.endsWith(".sql"))
+    .sort();
+
+  assert.ok(files.includes("202610090008_production_hardening.sql"));
+  assert.ok(files.includes("202610260001_admin_product_images_edit_delete.sql"));
+  assert.equal(files.length, 21);
+  assert.equal(new Set(files).size, files.length);
 });
 
 test("production hardening keeps sensitive webhook/payment RPCs service-role-only",()=>{

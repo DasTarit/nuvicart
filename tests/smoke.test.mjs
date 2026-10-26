@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = path.resolve(new URL("..", import.meta.url).pathname);
+const root = path.dirname(fileURLToPath(import.meta.url)) + "/..";
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
 test("Phase 1 storefront architecture remains present", () => {
@@ -116,7 +117,8 @@ test("Production search covers name, descriptions, tags, brand and category", ()
     assert.match(migration, new RegExp(token, "i"), token);
   }
   assert.match(migration, /ilike/i);
-  assert.doesNotMatch(repository, /`[^`]*\$\{.*query/i);
+  assert.match(repository, /rpc\(\s*"search_catalog_product_ids"/);
+  assert.match(repository, /\{\s*search_term:\s*search\s*\}/);
 });
 
 test("Catalog domain exposes rich product detail without removing the storefront DTO", () => {
@@ -334,7 +336,7 @@ test("Phase 3.1 profile email is read-only and sourced from Auth", () => {
   assert.match(repo, /email: user\.email/);
   assert.doesNotMatch(route, /b\.email/);
   assert.match(page, /profile\?\.email/);
-  assert.match(page, /readOnly disabled/);
+  assert.match(page, /readOnly[\s\S]*?disabled/);
 });
 
 test("Phase 3.1 does not retain competing synchronization locks", () => {

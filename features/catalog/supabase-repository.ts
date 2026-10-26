@@ -51,6 +51,7 @@ type ProductRow = {
   slug: string;
   name: string;
   sku: string | null;
+  image_url: string | null;
   legacy_id: string | null;
   short_description: string | null;
   description: string | null;
@@ -137,6 +138,10 @@ function mapProduct(row: ProductRow, availability: AvailabilityRow | undefined):
   const images = [...(row.product_images ?? [])]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map(mapImage);
+  // Products that only have products.image_url (no product_images rows) still show their image.
+  if (!images.length && row.image_url && /^(\/|https:\/\/)/.test(row.image_url)) {
+    images.push({ id: `${row.id}-primary`, url: row.image_url, altText: row.name, sortOrder: 0, isPrimary: true });
+  }
   const variants = (row.product_variants ?? []).filter((variant) => variant.is_active).map(mapVariant);
 
   return {
@@ -206,8 +211,9 @@ async function fetchRows(query: ProductQuery = {}, options: { slug?: string; ids
     .select(`
       id, slug, name, sku, legacy_id, short_description, description, price,
       compare_at_price, status, is_featured, is_active, rating, review_count, tags,
-      categories!inner(id, name, slug, description, image_url, is_active, sort_order),
-      brands!inner(id, name, slug, description, logo_url, is_active),
+      image_url,
+      categories${query.category ? "!inner" : ""}(id, name, slug, description, image_url, is_active, sort_order),
+      brands${query.brand ? "!inner" : ""}(id, name, slug, description, logo_url, is_active),
       product_images(id, url, alt_text, sort_order, is_primary),
       product_variants(id, sku, name, option_values, price_override, is_active)
     `)
@@ -247,8 +253,9 @@ async function fetchRowsByLegacyIds(legacyIds: string[]) {
     .select(`
       id, slug, name, sku, legacy_id, short_description, description, price,
       compare_at_price, status, is_featured, is_active, rating, review_count, tags,
-      categories!inner(id, name, slug, description, image_url, is_active, sort_order),
-      brands!inner(id, name, slug, description, logo_url, is_active),
+      image_url,
+      categories(id, name, slug, description, image_url, is_active, sort_order),
+      brands(id, name, slug, description, logo_url, is_active),
       product_images(id, url, alt_text, sort_order, is_primary),
       product_variants(id, sku, name, option_values, price_override, is_active)
     `)
