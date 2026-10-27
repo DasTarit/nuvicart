@@ -50,7 +50,8 @@ export const orderRepository: OrderRepository = {
       p_promotion_code: input.promotionCode ?? null,
     });
     if (error) throw new Error(error.message);
-    return mapSummary(data as Record<string, unknown>);
+    const row = data as Record<string, unknown>;
+    return mapSummary({ ...row, id: row.id ?? row.order_id });
   },
 
   async listOrders() {
