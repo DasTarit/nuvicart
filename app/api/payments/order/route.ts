@@ -32,9 +32,19 @@ export async function POST(request: Request) {
     const { data: linked, error: linkError } = await admin.rpc("attach_provider_order", { p_attempt_id: String(attempt.attempt_id), p_provider_order_id: providerOrder.id });
     if (linkError) throw linkError;
     return NextResponse.json({ keyId: getRazorpayKeyId(), order: { ...attempt, ...linked, provider_order_id: providerOrder.id, amount_minor: amountMinor } });
-  } catch (error) {
+  /*} catch (error) {
     const message = error instanceof Error ? error.message : "PAYMENT_ORDER_FAILED";
     const status = message.includes("UNAUTHENTICATED") ? 401 : message.includes("ORDER_NOT_FOUND") || message.includes("ORDER_NOT_PAYABLE") || message.includes("ORDER_NOT_RETRYABLE") ? 409 : message === "RAZORPAY_NOT_CONFIGURED" ? 503 : 500;
+    return NextResponse.json({ error: status === 503 ? "Payments are not configured yet." : "We couldn't initialize payment. Please try again." }, { status });
+  }*/
+  } catch (error) {
+    const raw = error instanceof Error ? error.message
+      : (error && typeof error === "object" && "message" in error) ? String((error as { message: unknown }).message)
+      : "PAYMENT_ORDER_FAILED";
+    console.error("[payments/order] failed:", raw, error);
+    const status = raw.includes("UNAUTHENTICATED") ? 401
+      : raw.includes("ORDER_NOT_FOUND") || raw.includes("ORDER_NOT_PAYABLE") || raw.includes("ORDER_NOT_RETRYABLE") ? 409
+      : raw === "RAZORPAY_NOT_CONFIGURED" ? 503 : 500;
     return NextResponse.json({ error: status === 503 ? "Payments are not configured yet." : "We couldn't initialize payment. Please try again." }, { status });
   }
 }
